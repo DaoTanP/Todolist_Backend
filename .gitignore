@@ -44,4 +44,4 @@ testem.log
 Thumbs.db
 
 # Custom files
-.rest
+*.rest
