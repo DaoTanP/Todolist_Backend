@@ -1,6 +1,5 @@
 const fs = require('fs');
 const router = require('express').Router();
-const data = require('../todo-list.json');
 const Task = require('../entities/task');
 const dataSource = require('../dataSource');
 const repository = dataSource.getRepository(Task);
@@ -174,6 +173,8 @@ router.route('/')
  *         description: Task deleted successfully
  *       404:
  *         description: The task was not found
+ *       500:
+ *         description: Server error
  */
 router.route('/:id')
     .get(async (req, res) => {
@@ -214,9 +215,16 @@ router.route('/:id')
         }
     })
     .delete(async (req, res) => {
-        await repository.delete({ id: req.params.id });
-
-        res.status(200).json('Task deleted successfully');
+        try {
+            const result = await repository.delete({ id: req.params.id });
+            if (result.affected === 0) {
+                res.status(404).json('Task not found');
+                return;
+            }
+            res.status(200).json('Task deleted successfully');
+        } catch (error) {
+            res.status(500).json(error);
+        }
     });
 
 module.exports = router;
